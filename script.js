@@ -162,8 +162,8 @@ function createKrathongElement(name, wish, visualContent, isCustomDrawing = fals
 
     item.innerHTML = `
         <div style="background:rgba(10,15,35,0.85); border:1px solid #ffd700; padding:5px 8px; border-radius:8px; font-size:0.7rem; text-align:center; margin-bottom:3px; max-width:160px; word-wrap:break-word;">
-            <span style="color:#ffd700; font-weight:600; display:block;">${name}</span>
-            <span style="color:#f0f0f0; font-weight:300;">${wish}</span>
+            <span style="color:#ffd700; font-weight:600; display:block;">${escapeHtml(name)}</span>
+            <span style="color:#f0f0f0; font-weight:300;">${escapeHtml(wish)}</span>
         </div>
         ${krathongVisualHTML}
         <div style="width:50px; height:10px; background:radial-gradient(ellipse at center, rgba(255,200,50,0.8) 0%, transparent 70%); border-radius:50%; margin-top:-3px;"></div>
@@ -199,7 +199,8 @@ function launchKrathong() {
         clearCanvas();
     }
 
-    if (window.sendKrathongToFirebase) {
+    // ส่งข้อมูลขึ้น Firebase Real-time Database (ถ้ามีการเชื่อมต่อใน HTML) หรือแสดงผลในเครื่องทันที
+    if (typeof window.sendKrathongToFirebase === 'function') {
         window.sendKrathongToFirebase(name, wish, visualContent, isCustom);
     } else {
         createKrathongElement(name, wish, visualContent, isCustom);
@@ -209,6 +210,18 @@ function launchKrathong() {
     launchCount++;
     localStorage.setItem('t2_krathong_count', launchCount);
     updateQuotaDisplay();
+}
+
+// ป้องกัน XSS เบื้องต้น
+function escapeHtml(text) {
+    const map = {
+        '&': '&',
+        '<': '<',
+        '>': '>',
+        '"': '"',
+        "'": '''
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
 }
 
 window.onload = () => {
